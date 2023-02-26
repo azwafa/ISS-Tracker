@@ -2,10 +2,11 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <script type="text/javascript" src="http://code.jquery.com/jquery-latest.min.js"></script>
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ISS Tracker</title>
-    <link rel="icon" type=""image/x-icon" href="/issicon.png">
+    <link rel="icon" type=""image/x-icon" href="issicon.png">
 
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"
      integrity="sha256-kLaT2GOSpHechhsozzB+flnD+zUyjE2LlfWPgU04xyI="
@@ -34,9 +35,19 @@ L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
 }).addTo(map);
 
-navigator.geolocation.watchPosition(success, error);
 
-let marker, circle, zoomed;
+
+
+//if position is found, define a circle (success method), else throw the error method
+
+
+
+
+
+
+
+
+let marker, circle, zoomed, ISS;
 
 function success(pos) {
     const lat = pos.coords.latitude;
@@ -51,9 +62,7 @@ function success(pos) {
     marker = L.marker([lat, lng]).addTo(map);
     circle = L.circle([lat, lng], {radius: accuracy}).addTo(map);
 
-    if (!zoomed) {
-        zoomed = map.fitBounds(circle.getBounds());
-    }
+    
 }
 
 function error(err) {
@@ -63,6 +72,47 @@ function error(err) {
         alert("Unable to retrieve current location.")
     }
 }
+
+
+
+
+var greenIcon = L.icon({
+    iconUrl: 'issmodel.png',
+
+    iconSize:     [100, 100], // size of the icon
+    iconAnchor:   [22, 94], // point of the icon which will correspond to marker's location
+    
+});
+
+
+
+
+
+
+function moveISS () {
+    $.getJSON('http://api.open-notify.org/iss-now.json?callback=?', function(data) {
+        var lat = data['iss_position']['latitude'];
+        var lon = data['iss_position']['longitude'];
+
+        if (ISS){
+         map.removeLayer(ISS);
+        }
+        ISS = L.marker([lat, lon], {icon: greenIcon}).addTo(map);
+       // ISS_Circle = L.circle([lat, lon], {radius: accuracy}).addTo(map);
+
+        //if (!zoomed) {
+         //   zoomed = map.fitBounds(ISS_Circle.getBounds());
+        //}
+    });
+
+    
+
+    setTimeout(moveISS, 5000); 
+}
+
+moveISS();
+navigator.geolocation.watchPosition(success, error);
+
 
 </script>
 </html>
